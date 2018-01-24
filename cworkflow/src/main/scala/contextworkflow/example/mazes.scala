@@ -1,6 +1,6 @@
-package transformer.example
+package contextworkflow.example
 
-import transformer._
+import contextworkflow._
 import rescala._
 import scala.language.implicitConversions
 import scalaz.effect._

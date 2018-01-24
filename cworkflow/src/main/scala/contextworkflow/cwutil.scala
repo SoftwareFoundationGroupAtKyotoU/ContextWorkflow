@@ -1,4 +1,4 @@
-package transformer
+package contextworkflow
 
 import scala.language.implicitConversions
 import scala.language.reflectiveCalls
@@ -16,8 +16,8 @@ object cwutil {
 
   val RC = ReactiveContext
 
-  type CW[A] = cwmonad.CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]
-  type SUS[R] = Fix[CWMT[Unit,IO,?,?],R]
+  type CW[A] = cwmonad.CWMT[Unit,IO,Nothing,A]
+  //type SUS[R] = Fix[CWMT[Unit,IO,?,?],R]
 
   val cwmless = new Monadless[CW]{
     def apply[T](v: => T): M[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
@@ -40,18 +40,18 @@ object cwutil {
 
   def compensateWith[A](na:IO[A])(ca:A => IO[Unit]): CW[A] = compL(na)(ca)
 
-  val cp: CW[Unit] = checkpointL[Unit,IO,SUS[Nothing]]
+  val cp: CW[Unit] = checkpointL[Unit,IO,Nothing]
   val checkpoint = cp
 
-  def sub[A](cw: CW[A]):CW[A] = subL[Unit,IO,SUS[Nothing],A](cw)
+  def sub[A](cw: CW[A]):CW[A] = subL[Unit,IO,Nothing,A](cw)
 
   def atom[A](na:IO[A])(ca:A => IO[Unit] = (_:A) => IO(())): CW[A] = atomL(na)(ca)
 
-  def atomic[A](cw: CW[A]): CW[A] = cwmonad.atomicL[Unit,IO,SUS[Nothing],A](cw)
+  def atomic[A](cw: CW[A]): CW[A] = cwmonad.atomicL[Unit,IO,Nothing,A](cw)
 
-  def nonatomic[A](cw: CW[A]): CW[A] = cwmonad.nonatomicL[Unit,IO,SUS[Nothing],A](cw)
+  def nonatomic[A](cw: CW[A]): CW[A] = cwmonad.nonatomicL[Unit,IO,Nothing,A](cw)
 
-  def throwError[A](s:Context): CW[A] = throwTError[IO,SUS[Nothing],A](s)
+  def throwError[A](s:Context): CW[A] = throwTError[IO,Nothing,A](s)
 
   // catch TransactionError in the normal action of pwf
   private def catchTE[A](cw: => CW[Try[A]]):CW[Try[A]] = {
@@ -115,7 +115,7 @@ object cwutil {
 
     def join[B](implicit ev: A =:= CW[B])
     : CW[B] = {
-      val M = cwM[Unit, IO, Fix[CWMT[Unit, IO, ?, ?], Nothing]]
+      val M = cwM[Unit, IO, Nothing]
       M.join(M.map(cw)(ev(_)))
     }
   }
@@ -146,7 +146,7 @@ object cwutil {
 
     def %~%(comp: => A => IO[Unit]) : CW[A] =
       for {
-        tried <- compL(t)(_ match {
+        tried <- compL[Unit,IO,Nothing,Try[A]](t)(_ match {
           case Success(a) => comp(a)
           case Failure(e) => IO(())
         })

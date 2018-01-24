@@ -9,7 +9,7 @@ package test.transformer
 import org.scalacheck._
 import org.scalacheck.Test.Parameters
 
-import transformer._
+import contextworkflow._
 import cwmonad._
 import cwutil._
 

@@ -1,4 +1,4 @@
-package transformer
+package contextworkflow
 
 import scala.language.implicitConversions
 import scala.language.reflectiveCalls
@@ -92,6 +92,8 @@ object cwmonad {
       myrun[IO,A](st)(ev(this)).unsafePerformIO()
     }
 
+    import cwutil.CW
+
     /**
       * Standard execute method with underlying IO monad, which is used with cwutil
       * @param st
@@ -99,31 +101,33 @@ object cwmonad {
       * @return
       */
     def exec(st: Sig = ReactiveContext(Continue))
-            (implicit ev: CWMT[E,M,S,A] =:= cwutil.CW[A])
-    : \/[Option[cwutil.CW[A]],A] = {
+            (implicit ev: CWMT[E,M,S,A] =:= CW[A])
+    : \/[Option[CW[A]],A] = {
       val r = myrun[IO,A](st)(ev(this).asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],A],A]]).unsafePerformIO()
-      r.leftMap(opt => opt.map(_.out.asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]]))
+      r.leftMap(opt => opt.map(_.out.asInstanceOf[CWMT[Unit,IO,Nothing,A]]))
     }
 
+    // following methods are for test
+
     def runBMIO(st: Sig = ReactiveContext(Continue))
-             (implicit ev: CWMT[E,M,S,A] =:= CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A])
-    : IO[\/[Option[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]],A]] = {
+             (implicit ev: CWMT[E,M,S,A] =:= CW[A])
+    : IO[\/[Option[CW[A]],A]] = {
       val r = myrun[IO,A](st)(ev(this).asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],A],A]])
-      r.map(_.leftMap(opt => opt.map(_.out.asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]])))
+      r.map(_.leftMap(opt => opt.map(_.out.asInstanceOf[CW[A]])))
     }
 
     def runBMIOReturnsContext(st: Sig)
-                           (implicit ev: CWMT[E,M,S,A] =:= CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A])
-    : IO[(\/[Option[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]],A],Context)] = {
+                           (implicit ev: CWMT[E,M,S,A] =:= CW[A])
+    : IO[(\/[Option[CW[A]],A],Context)] = {
       val r = myrunReturnsContext[IO,A](st)(ev(this).asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],A],A]])
-      r.map(rr => (rr._1.leftMap(opt => opt.map(_.out.asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]])),rr._2))
+      r.map(rr => (rr._1.leftMap(opt => opt.map(_.out.asInstanceOf[CW[A]])),rr._2))
     }
 
     def runBMReturnsContext(st: Sig)
-                           (implicit ev: CWMT[E,M,S,A] =:= CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A])
-    : (\/[Option[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]],A],Context) = {
+                           (implicit ev: CWMT[E,M,S,A] =:= CW[A])
+    : (\/[Option[CW[A]],A],Context) = {
       val r = myrunReturnsContext[IO,A](st)(ev(this).asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],A],A]]).unsafePerformIO()
-      (r._1.leftMap(opt => opt.map(_.out.asInstanceOf[CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]])),r._2)
+      (r._1.leftMap(opt => opt.map(_.out.asInstanceOf[CW[A]])),r._2)
     }
 
   }

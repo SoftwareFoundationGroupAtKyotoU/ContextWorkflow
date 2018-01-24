@@ -1,5 +1,5 @@
-package transformer.example
-import transformer._
+package contextworkflow.example
+import contextworkflow._
 
 import scalaz._
 import Scalaz._

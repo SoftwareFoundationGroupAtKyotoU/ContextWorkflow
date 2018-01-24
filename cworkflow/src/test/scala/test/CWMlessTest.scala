@@ -1,14 +1,14 @@
 package test.transformer
 
 import org.scalatest.FunSuite
-import transformer._
+import contextworkflow._
 
 import scala.language.{higherKinds, implicitConversions, reflectiveCalls}
 import scala.util.Try
 import scalaz._
 //import Scalaz._
-import transformer.cwutil._
-import transformer.cwmonad._
+import contextworkflow.cwutil._
+import contextworkflow.cwmonad._
 
 import scala.util.DynamicVariable
 import scalaz.effect._
