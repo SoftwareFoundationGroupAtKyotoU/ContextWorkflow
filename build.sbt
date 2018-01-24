@@ -35,12 +35,10 @@ lazy val commonSettings = Seq(
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck,
     "-minSize","10","-maxSize", "20", "-minSuccessfulTests", "200", "-workers", "1", "-verbosity", "2"),
   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
-  // if your project uses multiple Scala versions, use this for cross building
-  //addCompilerPlugin("org.spire-math" % "kind-projector" % "0.9.4" cross CrossVersion.binary)
 )
 
 lazy val root = (project in file(".")).settings(
-  name := "context-workflow"//,
+  name := "contextworkflow"//,
   //commonSettings
 ).aggregate(cw)
 

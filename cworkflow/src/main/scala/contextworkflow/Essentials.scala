@@ -104,6 +104,5 @@ class In[F[_, _], A](k: F[Fix[F, A], A]) extends Fix[F, A] {
 
 object In{
   def apply[F[_,_],A](k: F[Fix[F, A], A]) = new In(k)
-  //def apply[F[_,_],A](k: F[Fix[F, A], A]) = new In(k)
 }
 

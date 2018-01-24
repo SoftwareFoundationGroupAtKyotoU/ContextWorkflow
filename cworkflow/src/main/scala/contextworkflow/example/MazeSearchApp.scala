@@ -3,9 +3,7 @@ package contextworkflow.example
 import contextworkflow._
 import rescala._
 import scala.language.implicitConversions
-
 import scalaz._
-import scalaz.effect._
 import Scalaz._
 
 

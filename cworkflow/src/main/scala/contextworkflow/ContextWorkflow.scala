@@ -458,22 +458,4 @@ object cwmonad {
     }
   }
 
-
-
-  // flip should atomawashi
-//  case class Flip2[P[_,_,_],A,B[_],C](unFlip2:P[B[_],A,C])
-//
-////  implicit def fFlip2[P[_,_,_],A1,B1](implicit F: Functor[P[A1,B1,?]]) = new Functor[Flip2[P,A1,B1,?]]{
-////    override def map[A, B](fa: Flip2[P, A1, B1, A])(f: A => B): Flip2[P, A1, B1, B] = Flip2(F.map(fa.unFlip2)(f))
-////  }
-//
-//  implicit def bifFlip2[M[_],T](implicit F:Functor[M]) = new Bifunctor[Flip2[EitherT,?,M,?]] {
-//    override def bimap[A, B, C, D](fab: Flip2[EitherT, A, M, B])(f: A => C, g: B => D): Flip2[EitherT, C, M, D] = {
-//      val ma = fab.unFlip2.run
-//      Flip2[EitherT,C,M,D](EitherT(ma.map(a => a.bimap(f,g))))
-//    }
-//  }
-
-
-
 }

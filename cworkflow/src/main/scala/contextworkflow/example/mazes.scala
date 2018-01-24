@@ -59,24 +59,6 @@ object mazes{
     _ <- IO.putStrLn(info + "[move to " + n.point + "]")
   } yield ()
 
-  //  def moveFromTo[S](from:Node, to:Node):CW[S,Unit] =
-  //    move(to) %% (_ => move(from, "comp:"))
-
-  //  def idd[A](a: => A):Id[A] = a
-  //
-  //  implicit def toWorkflowOps[A](proc: => IO[A]): WorkflowIOOps[A] =
-  //    new WorkflowIOOps[A](proc)
-  //
-  //  class WorkflowIOOps[A](t: IO[A]) {
-  //    // Add compensation to the STransaction t
-  //    def %%[E,R,B](comp: A => IO[Unit] = _ => IO(())) =
-  //      catom[E,R,A,B](t)(comp)
-  //  }
-
-//  def catom[E,R,A,C](a:IO[A])(comp:A => IO[Unit] = (_:A) => IO(())) =
-//    compensateWith[R,IO,A,Unit,C](a)(a => comp(a))
-
-
   def timeout(threshold: Int, ctx:Context = Abort):() => Signal[Context] = () => {
     val now = moveCount.now
     Signal {

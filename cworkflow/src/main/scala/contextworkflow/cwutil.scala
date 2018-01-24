@@ -17,7 +17,6 @@ object cwutil {
   val RC = ReactiveContext
 
   type CW[A] = cwmonad.CWMT[Unit,IO,Nothing,A]
-  //type SUS[R] = Fix[CWMT[Unit,IO,?,?],R]
 
   val cwmless = new Monadless[CW]{
     def apply[T](v: => T): M[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
@@ -26,8 +25,6 @@ object cwutil {
       l0 <- b
       a <- ma
     } yield a :: l0).map(_.reverse)
-
-    //def subW[T](body: T): CWFN[T] = sub(workflow(body))
   }
 
   def point[A](a: => A) = cwM.point(a)
