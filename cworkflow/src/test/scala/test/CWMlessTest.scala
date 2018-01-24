@@ -7,8 +7,8 @@ import scala.language.{higherKinds, implicitConversions, reflectiveCalls}
 import scala.util.Try
 import scalaz._
 //import Scalaz._
-import transformer.cwfbmutil._
-import transformer.fwf._
+import transformer.cwutil._
+import transformer.cwmonad._
 
 import scala.util.DynamicVariable
 import scalaz.effect._
@@ -31,7 +31,7 @@ class CWMlessTest extends FunSuite{
     dat.value = dat.value + "_" + str
   }
 
-  def testP:CWFN[Unit] = lift {
+  def testP:CW[Unit] = lift {
     unlift(log("n0") /+ (_ => log("f0")))
     unlift(log("n1") /+ (_ => log("f1")))
     unlift(log("n2") /+ (_ => log("f2")))
@@ -40,7 +40,7 @@ class CWMlessTest extends FunSuite{
 
   test("success"){
     mytest{
-      testP.runBM(RC(Continue))
+      testP.exec(RC(Continue))
       assert(dat.value == "_n0_n1_n2_n3")
     }
 
@@ -48,7 +48,7 @@ class CWMlessTest extends FunSuite{
 
   test("compensation"){
     mytest{
-      testP.runBM(RC(List(Continue,Continue,Abort)))
+      testP.exec(RC(List(Continue,Continue,Abort)))
       assert(dat.value == "_n0_n1_f1_f0")
     }
   }
@@ -61,7 +61,7 @@ class CWMlessTest extends FunSuite{
       c
     }
 
-    val r = testP1.runBM(RC(Continue))
+    val r = testP1.exec(RC(Continue))
     assert(r == \/-(17))
   }
 

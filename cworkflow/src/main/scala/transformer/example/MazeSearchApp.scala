@@ -14,15 +14,15 @@ import Scalaz._
   */
 
 object MazeSearchMlessApp extends App {
-  import cwfbmutil._
+  import cwutil._
   import cwmless._
   import mazes._
   import scala.language.reflectiveCalls
 
-  def visit(n: Node, maze: Set[Node]):CWFN[Unit] = lift {
+  def visit(n: Node, maze: Set[Node]):CW[Unit] = lift {
     unlift(visited(n) %% (_ => unknown(n)))
     if(n.hasCP) unlift(cp)
-    unlift{neighbors(n, maze).foldLeftM[CWFN,Unit](())((_, neighbor) =>
+    unlift{neighbors(n, maze).foldLeftM[CW,Unit](())((_, neighbor) =>
       if(!isVisited(neighbor))
         sub{ lift{
           unlift(move(neighbor) %% (_ => move(n, "comp:")))
@@ -60,15 +60,15 @@ object MazeSearchMlessApp extends App {
   val start0: Node = maze0.find(_.point == (0,0)).get
   def to = timeout(7,Restart)()
 
-  val p1 = visit(start0, maze0).runBM(RC(to)) match {
+  val p1 = visit(start0, maze0).exec(RC(to)) match {
     case -\/(Some(p)) => p
   }
   println("***** Charging *****")
-  val p2 = p1.runBM(RC(to)) match {
+  val p2 = p1.exec(RC(to)) match {
     case -\/(Some(p)) => p
   }
   println("***** Charging *****")
-  p2.runBM(RC(to))
+  p2.exec(RC(to))
 
   initMaze(maze0)
 

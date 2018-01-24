@@ -10,8 +10,8 @@ import org.scalacheck._
 import org.scalacheck.Test.Parameters
 
 import transformer._
-import fwf._
-import cwfbmutil._
+import cwmonad._
+import cwutil._
 
 import scala.language.implicitConversions
 import scala.language.reflectiveCalls
@@ -154,7 +154,7 @@ object cwfnspecutil{
 
   val effl = new DynamicVariable(List[Int]())
 
-  def eff[R](i:Int, io: IO[Unit] = IO(())):CWFN[Unit] = IO{effl.value = i :: effl.value}.flatMap(_ => io) %% (_ => IO(effl.value = -i :: effl.value)) //{_ => IO(effl.value = effl.value.filterNot(_ == i))}
+  def eff[R](i:Int, io: IO[Unit] = IO(())):CW[Unit] = IO{effl.value = i :: effl.value}.flatMap(_ => io) %% (_ => IO(effl.value = -i :: effl.value)) //{_ => IO(effl.value = effl.value.filterNot(_ == i))}
 
   val effList = (1 to 1000).map(eff(_))
 
@@ -162,18 +162,18 @@ object cwfnspecutil{
 
   val SUBOFFSET = -5000000
 
-  implicit def tct2cwf(tct: Tree[TestCmd]):CWFN[Unit] = {
+  implicit def tct2cwf(tct: Tree[TestCmd]):CW[Unit] = {
     var effcount = 1
     var subecount = SUBOFFSET
 
-    def tc2cwf(tc: TestCmd):CWFN[Unit] = tc match {
+    def tc2cwf(tc: TestCmd):CW[Unit] = tc match {
       case PW => {
         val cw = eff(effcount, IO{effcount += 1})
         cw}
       case CP => cp
     }
 
-    def aux(t: Tree[TestCmd]):CWFN[Unit] = t match{
+    def aux(t: Tree[TestCmd]):CW[Unit] = t match{
       case Leaf(cmd) => tc2cwf(cmd)
       case Node(Leaf(cmd),n) => for{
         _ <- tc2cwf(cmd)
@@ -196,7 +196,7 @@ object cwfnspecutil{
 
   val genNoSubCmdTree: Gen[Tree[TestCmd]] = genNoLeftNodeTree(genTestCmd)
 
-  implicit val arbCWF: Arbitrary[CWFN[Unit]] = Arbitrary{genTree(genTestCmd).map(tct2cwf)}
+  implicit val arbCWF: Arbitrary[CW[Unit]] = Arbitrary{genTree(genTestCmd).map(tct2cwf)}
 
 
 //  val sv = new DynamicVariable(0)

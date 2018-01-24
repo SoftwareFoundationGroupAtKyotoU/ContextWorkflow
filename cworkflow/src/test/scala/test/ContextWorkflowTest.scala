@@ -8,7 +8,7 @@ import scala.util.Try
 import scalaz._
 //import Scalaz._
 import transformer.cwfutil._
-import transformer.fwf._
+import transformer.cwmonad._
 
 import scala.util.DynamicVariable
 import scalaz.effect._

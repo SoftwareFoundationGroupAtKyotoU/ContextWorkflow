@@ -6,20 +6,20 @@ import scala.language.higherKinds
 import scalaz._
 import Scalaz._
 import scalaz.effect.IO
-import fwf._
+import cwmonad._
 import io.monadless._
 
 import scala.util.{Try,Failure,Success}
 
-/** black magic cast!! */
-object cwfbmutil {
+/** Utility functions for CW monad */
+object cwutil {
 
   val RC = ReactiveContext
 
-  type CWFN[A] = fwf.CW[Unit,IO,Fix[CW[Unit,IO,?,?],Nothing],A]
-  type SUS[R] = Fix[CW[Unit,IO,?,?],R]
+  type CW[A] = cwmonad.CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],Nothing],A]
+  type SUS[R] = Fix[CWMT[Unit,IO,?,?],R]
 
-  val cwmless = new Monadless[CWFN]{
+  val cwmless = new Monadless[CW]{
     def apply[T](v: => T): M[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
 
     def collect[A](l: List[M[A]]): M[List[A]] = l.foldLeft(atom[List[A]](IO(Nil))())((b, ma) => for{
@@ -32,30 +32,30 @@ object cwfbmutil {
 
   def point[A](a: => A) = cwM.point(a)
 
-  def foreach[A](l: Stream[A])(f: A => CWFN[Unit]): CWFN[Unit] =
-    l.foldLeftM[CWFN[?], Unit](())((_, a) => f(a))
+  def foreach[A](l: Stream[A])(f: A => CW[Unit]): CW[Unit] =
+    l.foldLeftM[CW[?], Unit](())((_, a) => f(a))
 
-  def foldCW[A,B](l: List[A])(z: B)(f: (B,A) => CWFN[B]): CWFN[B] =
-    l.foldLeftM[CWFN[?], B](z)(f)
+  def foldCW[A,B](l: List[A])(z: B)(f: (B,A) => CW[B]): CW[B] =
+    l.foldLeftM[CW[?], B](z)(f)
 
-  def compensateWith[A](na:IO[A])(ca:A => IO[Unit]): CWFN[A] = compL(na)(ca)
+  def compensateWith[A](na:IO[A])(ca:A => IO[Unit]): CW[A] = compL(na)(ca)
 
-  val cp: CWFN[Unit] = checkpointL[Unit,IO,SUS[Nothing]]
+  val cp: CW[Unit] = checkpointL[Unit,IO,SUS[Nothing]]
   val checkpoint = cp
 
-  def sub[A](cw: CWFN[A]):CWFN[A] = subL[Unit,IO,SUS[Nothing],A](cw)
+  def sub[A](cw: CW[A]):CW[A] = subL[Unit,IO,SUS[Nothing],A](cw)
 
-  def atom[A](na:IO[A])(ca:A => IO[Unit] = (_:A) => IO(())): CWFN[A] = atomL(na)(ca)
+  def atom[A](na:IO[A])(ca:A => IO[Unit] = (_:A) => IO(())): CW[A] = atomL(na)(ca)
 
-  def atomic[A](cw: CWFN[A]): CWFN[A] = fwf.atomicL[Unit,IO,SUS[Nothing],A](cw)
+  def atomic[A](cw: CW[A]): CW[A] = cwmonad.atomicL[Unit,IO,SUS[Nothing],A](cw)
 
-  def nonatomic[A](cw: CWFN[A]): CWFN[A] = fwf.nonatomicL[Unit,IO,SUS[Nothing],A](cw)
+  def nonatomic[A](cw: CW[A]): CW[A] = cwmonad.nonatomicL[Unit,IO,SUS[Nothing],A](cw)
 
-  def throwError[A](s:Context): CWFN[A] = throwTError[IO,SUS[Nothing],A](s)
+  def throwError[A](s:Context): CW[A] = throwTError[IO,SUS[Nothing],A](s)
 
   // catch TransactionError in the normal action of pwf
-  private def catchTE[A](cw: => CWFN[Try[A]]):CWFN[Try[A]] = {
-    val recovery: PartialFunction[Try[A], CWFN[Unit]] = (t: Try[A]) => t match {
+  private def catchTE[A](cw: => CW[Try[A]]):CW[Try[A]] = {
+    val recovery: PartialFunction[Try[A], CW[Unit]] = (t: Try[A]) => t match {
       case Failure(AbortE) => throwTError(Abort)
       case Failure(RestartE) => throwTError(Restart)
       //case Failure(SuspendTE) => throwSuspend()
@@ -68,54 +68,54 @@ object cwfbmutil {
     } yield c
   }
 
-  def finalizer[A](cw: CWFN[A], f: => Unit):CWFN[A] = sub{for{
+  def finalizer[A](cw: CW[A], f: => Unit):CW[A] = sub{for{
     _ <- atom(IO(()))(_ => IO(f))
     x <- cw
     _ <- atom(IO(f))()
   } yield x}
 
 
-  implicit def toCWFOps[A](cw: => CWFN[A]): CWFOps[A] =
+  implicit def toCWFOps[A](cw: => CW[A]): CWFOps[A] =
     new CWFOps[A](cw)
 
-  class CWFOps[A](cw: CWFN[A]) {
+  class CWFOps[A](cw: CW[A]) {
     /** programmable compensation */
     def %% (comp: A => IO[Unit])
-    : CWFN[A] = for {
+    : CW[A] = for {
       res <- cw
       _ <- atomL(IO(res))(a => comp(a))
     } yield res
 
     /** programmable compensation */
     def %%(comp: IO[Unit])
-    : CWFN[A] = for {
+    : CW[A] = for {
       res <- cw
       _ <- atomL(IO(res))(a => comp)
     } yield res
 
     /** programmable compensation */
-    def \\ (comp: A => Unit = _ => ()): CWFN[A] = %%(a => IO(comp(a)))
+    def \\ (comp: A => Unit = _ => ()): CW[A] = %%(a => IO(comp(a)))
 
     // def \\ () : CWFN[A] = %%(_ => IO(()))
 
     /** programmable compensation */
-    def /+ (comp: => A => Unit = _ => ()): CWFN[A] = \\(comp)
+    def /+ (comp: => A => Unit = _ => ()): CW[A] = \\(comp)
 
     /** programmable compensation. lower than >>= and => */
-    def |+ (comp: => A => Unit = _ => ()): CWFN[A] = \\(comp)
+    def |+ (comp: => A => Unit = _ => ()): CW[A] = \\(comp)
 
     /** finally (to be deprecated!) */
-    def /- (f: => Unit): CWFN[A] = finalizer(cw, f)
+    def /- (f: => Unit): CW[A] = finalizer(cw, f)
 
     /** programmable compensation */
     def ^/ (comp: => A => Unit = _ => ()) = \\(comp)
 
     /** finally */
-    def ^/+ (f: => Unit): CWFN[A] = finalizer(cw, f)
+    def ^/+ (f: => Unit): CW[A] = finalizer(cw, f)
 
-    def join[B](implicit ev: A =:= CWFN[B])
-    : CWFN[B] = {
-      val M = cwM[Unit, IO, Fix[CW[Unit, IO, ?, ?], Nothing]]
+    def join[B](implicit ev: A =:= CW[B])
+    : CW[B] = {
+      val M = cwM[Unit, IO, Fix[CWMT[Unit, IO, ?, ?], Nothing]]
       M.join(M.map(cw)(ev(_)))
     }
   }
@@ -133,18 +133,18 @@ object cwfbmutil {
   // make user-thrown exception enable
   class CWFIOTryOps[A](t: IO[Try[A]]){
     /** exceptional compensation */
-    def \~\(comp: => A => Unit) : CWFN[A] = %~%(a => IO(comp(a)))
+    def \~\(comp: => A => Unit) : CW[A] = %~%(a => IO(comp(a)))
 
     /** exceptional compensation */
-    def /~ (comp: => A => Unit = _ => ()) : CWFN[A] = \~\(comp)
+    def /~ (comp: => A => Unit = _ => ()) : CW[A] = \~\(comp)
 
     /** lower than >>= and => */
-    def |~ (comp: => A => Unit = _ => ()): CWFN[A] = \~\(comp)
+    def |~ (comp: => A => Unit = _ => ()): CW[A] = \~\(comp)
 
     /** exceptional compensation of low precedence */
     def ^/~ (comp: => A => Unit = _ => ()) = \~\(comp)
 
-    def %~%(comp: => A => IO[Unit]) : CWFN[A] =
+    def %~%(comp: => A => IO[Unit]) : CW[A] =
       for {
         tried <- compL(t)(_ match {
           case Success(a) => comp(a)
@@ -161,13 +161,13 @@ object cwfbmutil {
 
   class CWFIOOps[A](t: IO[A]) {
 
-    def %% (comp: A => IO[Unit] = _ => IO(())): CWFN[A] =
+    def %% (comp: A => IO[Unit] = _ => IO(())): CW[A] =
       compL(t)(a => comp(a))
 
-    def %% (comp: IO[Unit]): CWFN[A] =
+    def %% (comp: IO[Unit]): CW[A] =
       compL(t)(_ => comp)
 
-    def \\ (comp: => A => Unit = _ => ()): CWFN[A] =
+    def \\ (comp: => A => Unit = _ => ()): CW[A] =
       compL(t)(a => IO(comp(a)))
 
     //    def \\[R](comp: => A => IO[Unit]): CWF[R,A] =
@@ -175,10 +175,10 @@ object cwfbmutil {
 
     //def \\ () :CWFN[A] = \\((_: A) => ())
 
-    def /+ (comp: => A => Unit = _ => ()): CWFN[A] = \\(comp)
+    def /+ (comp: => A => Unit = _ => ()): CW[A] = \\(comp)
 
     /** lower than >>= and => */
-    def |+ (comp: => A => Unit = _ => ()): CWFN[A] = \\(comp)
+    def |+ (comp: => A => Unit = _ => ()): CW[A] = \\(comp)
 
     /** compensation of low precedence */
     def ^/ (comp: => A => Unit = _ => ()) = \\(comp)
@@ -194,9 +194,9 @@ object cwfbmutil {
 object cwfutil {
 
   val RC = ReactiveContext
-  
-  type CWF[R,A] = fwf.CW[Unit,IO,Fix[CW[Unit,IO,?,?],R],A]
-  type SUS[R] = Fix[CW[Unit,IO,?,?],R]
+
+  type CWF[R,A] = cwmonad.CWMT[Unit,IO,Fix[CWMT[Unit,IO,?,?],R],A]
+  type SUS[R] = Fix[CWMT[Unit,IO,?,?],R]
 
   def foreach[R,A](l: Stream[A])(f: A => CWF[R,Unit]): CWF[R,Unit] =
     l.foldLeftM[CWF[R,?], Unit](IO(()) %% ())((_, a) => f(a))
@@ -245,10 +245,10 @@ object cwfutil {
 
     def \\(comp: IO[Unit])
     : CWF[R, A] = %%(comp)
-    
+
     def join[B](implicit ev: A =:= CWF[R, B])
     : CWF[R, B] = {
-      val M = cwM[Unit, IO, Fix[CW[Unit, IO, ?, ?], R]]
+      val M = cwM[Unit, IO, Fix[CWMT[Unit, IO, ?, ?], R]]
       M.join(M.map(cw)(ev(_)))
     }
   }
@@ -277,4 +277,4 @@ object cwfutil {
     def \\[R]: CWF[R, A] = \\((_: A) => ())
   }
 
-}  
+}

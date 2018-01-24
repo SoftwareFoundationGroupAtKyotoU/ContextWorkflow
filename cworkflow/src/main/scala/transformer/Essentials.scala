@@ -6,14 +6,10 @@ package transformer
 
 import rescala._
 
-
-import scala.annotation.tailrec
-import scala.util.{Failure, Success, Try}
 import scala.language.implicitConversions
 import scala.language.reflectiveCalls
 import scala.language.higherKinds
 import scala.language.existentials
-import scalaz._
 
 class CWException extends Exception
 case class PAbortE() extends Exception

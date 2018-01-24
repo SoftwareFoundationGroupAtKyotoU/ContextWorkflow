@@ -7,8 +7,8 @@ import scala.util.{Try,Failure,Success}
 import scalaz.effect.IO
 
 object PackageManagerMonadless extends App{
-  import fwf._
-  import cwfbmutil._
+  import cwmonad._
+  import cwutil._
   import cwmless._
 
   case class Pkg(pid: String,version: Double,dep: List[Pkg] = Nil){
@@ -21,10 +21,10 @@ object PackageManagerMonadless extends App{
 
   def uninstall(pkg:Pkg):IO[Unit] = IO(println("uninstall:" + pkg))
 
-  def replace(n:Pkg,o:Pkg):CWFN[Unit] =
+  def replace(n:Pkg,o:Pkg):CW[Unit] =
     install(n) %% (uninstall(n).flatMap(_ => install(o)))
 
-  def newInstall(pkg:Pkg):CWFN[Unit] =
+  def newInstall(pkg:Pkg):CW[Unit] =
     install(pkg) %% uninstall(pkg)
 
 //  def upgrade_(opl:List[Pkg],npl:List[Pkg]):CWFN[List[Pkg]] =
@@ -46,7 +46,7 @@ object PackageManagerMonadless extends App{
 //    }
 
   /* completed package is OK */
-  def upgrade1(opl:List[Pkg],np:Pkg):CWFN[List[Pkg]] =
+  def upgrade1(opl:List[Pkg],np:Pkg):CW[List[Pkg]] =
     lift {
       val opopt = opl.find(_.pid == np.pid)
       val instdeps = np.dep.filter(dp =>
@@ -63,7 +63,7 @@ object PackageManagerMonadless extends App{
       np :: opl1.filterNot(_.pid == np.pid)
     }
 
-  def upgrade(opl:List[Pkg],npl:List[Pkg]):CWFN[List[Pkg]] =
+  def upgrade(opl:List[Pkg],npl:List[Pkg]):CW[List[Pkg]] =
     foldCW(npl)(opl) { (opl1, np) => lift{
       unlift(cp);
       unlift(sub(upgrade1(opl1,np)) /+ (_ => println("skip uninstalling completed package:" + np)))
@@ -80,21 +80,21 @@ object PackageManagerMonadless extends App{
 
   val e1 = Pkg("e",1,List(d1))
 
-  upgrade(Nil,List(b1)).runBM()
-  upgrade(List(a1,b1),List(b2)).runBM()
+  upgrade(Nil,List(b1)).exec()
+  upgrade(List(a1,b1),List(b2)).exec()
 
   println("******************")
-  upgrade(List(a1),List(c2,d1)).runBM(RC(List(Continue,Continue,Continue,Abort)))
-  println(upgrade(List(a1),List(c2,e1)).runBM(RC(List(Continue,Continue,Continue,Abort))))
+  upgrade(List(a1),List(c2,d1)).exec(RC(List(Continue,Continue,Continue,Abort)))
+  println(upgrade(List(a1),List(c2,e1)).exec(RC(List(Continue,Continue,Continue,Abort))))
 
   println("******************")
 
-  val s = upgrade(List(a1),List(c2,e1)).runBM(RC(List(Continue,Continue,Continue,Continue,Restart)))
+  val s = upgrade(List(a1),List(c2,e1)).exec(RC(List(Continue,Continue,Continue,Continue,Restart)))
 
   println("suspended")
 
-  println(s.toEither.left.get.get.runBM(RC(Abort)))
-  println(s.toEither.left.get.get.runBM(RC(Continue)))
+  println(s.toEither.left.get.get.exec(RC(Abort)))
+  println(s.toEither.left.get.get.exec(RC(Continue)))
 
   println("******************")
 //
