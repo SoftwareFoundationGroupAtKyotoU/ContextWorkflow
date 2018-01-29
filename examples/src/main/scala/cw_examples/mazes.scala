@@ -31,7 +31,12 @@ object mazes{
     (0, 3), (1, 3), (2, 3), (3, 3), (4, 3), (5, 3),
     LLLLLL, (1, 4), LLLLLL, LLLLLL, LLLLLL, (5, 4),
     (0, 5), (1, 5), LLLLLL, (3, 5), (4, 5), (5, 5)
-  ) - LLLLLL).map(p => Node(p))
+  ) - LLLLLL).map(p => Node(p)).map { n =>
+    n.point match {
+      case (3, 0)|(3, 3) => n.copy(hasCP = true)
+      case _ => n
+    }
+  }
 
   def isVisited(n: Node): Boolean = {
     n.visited

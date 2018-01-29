@@ -5,7 +5,8 @@
 lazy val dep = Seq(
   "org.scalaz" % "scalaz-core_2.12" % "7.2.15",
   "org.scalaz" % "scalaz-effect_2.12" % "7.2.15",
-//  "org.scala-lang.modules" %% "scala-swing" % "2.0.0-M2",
+  "org.scala-lang.modules" %% "scala-swing" % "2.0.0",
+  "de.sciss" %% "swingplus" % "0.2.4",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
   "de.tuda.stg" %% "rescala" % "0.19.0",
