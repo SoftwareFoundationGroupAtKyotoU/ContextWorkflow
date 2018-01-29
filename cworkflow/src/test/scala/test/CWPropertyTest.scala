@@ -33,7 +33,7 @@ object cwfnspecutil{
 
   /** signal generator */
 
-  def genSig(): Gen[List[Context]] = genSig(Continue,Abort,Restart,Suspend)
+  def genSig(): Gen[List[Context]] = genSig(Continue,Abort,PAbort,Suspend)
 
   def genSig(t0: Context*): Gen[List[Context]] = {
     def genRC(i:Int):Gen[List[Context]] = for {
@@ -298,7 +298,7 @@ object CWPropertyTest extends Properties("PWorkflow"){
   }
 
   property("conj4") = forAll { (tr: Tree[TestCmd]) =>
-    Prop.propBoolean(!tr.hasLeftNode) ==> forAll(Gen.resize(tr.size, genSig(Restart))) { s =>
+    Prop.propBoolean(!tr.hasLeftNode) ==> forAll(Gen.resize(tr.size, genSig(PAbort))) { s =>
       mytest {
         val cw = tct2cwf(tr)
         val r = cw.runBMReturnsContext(RC(s))
@@ -330,7 +330,7 @@ object CWPropertyTest extends Properties("PWorkflow"){
           case _ => None
         }
           //((r._2 == Restart) ==> (r._1.toEither.left.get.isDefined)) ==> p4
-        (r._2 == Restart) ==> prop.isDefined ==> prop.get
+        (r._2 == PAbort) ==> prop.isDefined ==> prop.get
       }
     }
   }
@@ -339,7 +339,7 @@ object CWPropertyTest extends Properties("PWorkflow"){
   def withoutProComp(l:List[Int]) = l.filter(_ > SUBOFFSET)
 
   property("conj5 & 6") = forAll { (tr: Tree[TestCmd]) =>  //including conj5
-    forAll(Gen.resize(tr.size, genSig(Restart))) { s =>
+    forAll(Gen.resize(tr.size, genSig(PAbort))) { s =>
       mytest {
         val cw = tct2cwf(tr)
         val r = cw.runBMReturnsContext(RC(s))
@@ -360,7 +360,7 @@ object CWPropertyTest extends Properties("PWorkflow"){
             val p1 = isContinuous(withoutProComp(ceff1)) || ceff1.exists(_ <= SUBOFFSET)
 
             val p2 = mytest {
-              val r2 = p.runBMReturnsContext(RC(List(Continue,Restart)))
+              val r2 = p.runBMReturnsContext(RC(List(Continue,PAbort)))
               val eff2 = effl.value
 //              println("p2:",eff2, r2)
               !eff2.exists(_ < 0)  ||  // stopping at another future CP
@@ -370,7 +370,7 @@ object CWPropertyTest extends Properties("PWorkflow"){
             }
             //val p3:Prop
             val p3 = mytest {
-              val r3 = p.runBMReturnsContext(RC(List(Continue,Continue,Continue,Continue,Restart)))
+              val r3 = p.runBMReturnsContext(RC(List(Continue,Continue,Continue,Continue,PAbort)))
               val eff3 = effl.value
 //              println("p3:" + eff3 + r3)
               val a = r3._1 match {
@@ -389,7 +389,7 @@ object CWPropertyTest extends Properties("PWorkflow"){
           case _ => None
         }
         //((r._2 == Restart) ==> (r._1.toEither.left.get.isDefined)) ==> p4
-        (r._2 == Restart) ==> prop.isDefined ==> prop.get
+        (r._2 == PAbort) ==> prop.isDefined ==> prop.get
       }
     }
   }

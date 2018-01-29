@@ -18,18 +18,18 @@ object AbortE extends CWException
 object SuspendE extends CWException
 
 trait Context
-case class PAbort() extends Context
-object Restart extends PAbort{
-  override def toString: String = "R"
+//case class PAbort() extends Context
+object PAbort extends Context{
+  //override def toString: String = "R"
 }
 object Abort extends Context{
-  override def toString: String = "A"
+  //override def toString: String = "A"
 }
 object Suspend extends Context{
-  override def toString: String = "S"
+  //override def toString: String = "S"
 }
 object Continue extends Context{
-  override def toString: String = "C"
+  //override def toString: String = "C"
 }
 
 // Additional contexts to be implemented

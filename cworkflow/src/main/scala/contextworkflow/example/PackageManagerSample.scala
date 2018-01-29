@@ -87,7 +87,7 @@ object PackageManagerMonadless extends App{
 
   println("******************")
 
-  val s = upgrade(List(a1),List(c2,e1)).exec(RC(List(Continue,Continue,Continue,Continue,Restart)))
+  val s = upgrade(List(a1),List(c2,e1)).exec(RC(List(Continue,Continue,Continue,Continue,PAbort)))
 
   println("suspended")
 

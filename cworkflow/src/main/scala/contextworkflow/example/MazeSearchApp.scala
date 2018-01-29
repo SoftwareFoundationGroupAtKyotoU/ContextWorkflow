@@ -56,7 +56,7 @@ object MazeSearchMlessApp extends App {
   val c = Continue
   val maze0 = getMaze
   val start0: Node = maze0.find(_.point == (0,0)).get
-  def to = timeout(7,Restart)()
+  def to = timeout(7,PAbort)()
 
   val p1 = visit(start0, maze0).exec(RC(to)) match {
     case -\/(Some(p)) => p

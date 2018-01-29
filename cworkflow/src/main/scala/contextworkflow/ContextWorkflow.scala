@@ -250,9 +250,9 @@ object cwmonad {
     CWMT[Unit,M,S,A](FreeT.liftM[SS,MM,A](
       (s,susopt) match {
         case (Abort, _) => erME[Unit, M, STK].raiseError[A](fInSubL.point(Aborting[M[Unit], S](M.point(()))))
-        case (Restart, None) => erME[Unit, M, STK].raiseError[A](fInSubL.point(PAborting[M[Unit], S](None, M.point(()))))
+        case (PAbort, None) => erME[Unit, M, STK].raiseError[A](fInSubL.point(PAborting[M[Unit], S](None, M.point(()))))
         //case Suspend => Kleisli.local[M,A,Sig](_ => ReactiveContext(Suspend))()
-        case (Restart, sus) => erME[Unit, M, STK].raiseError[A](fInSubL.point(PAborting[M[Unit], S](sus, M.point(()))))
+        case (PAbort, sus) => erME[Unit, M, STK].raiseError[A](fInSubL.point(PAborting[M[Unit], S](sus, M.point(()))))
         case (Suspend, Some(sus)) => erME[Unit, M, STK].raiseError[A](fInSubL.point(Suspending[M[Unit], S](sus)))
         case (Suspend, None) => ???
         case _ => ???
@@ -351,7 +351,7 @@ object cwmonad {
         Kleisli.ask[M, Sig].liftM[EitherT[?[_], STK, ?]].flatMap[A]{ h =>
           h.ccheck() match {
             case Abort => erME[Unit,M,STK].raiseError[A](fInSubL.point(Aborting[M[Unit], S](M.point(()))))
-            case Restart => erME[Unit,M,STK].raiseError[A](fInSubL.point(PAborting[M[Unit], S](None, M.point(()))))
+            case PAbort => erME[Unit,M,STK].raiseError[A](fInSubL.point(PAborting[M[Unit], S](None, M.point(()))))
             case Suspend => erME[Unit,M,STK].raiseError[A](fInSubL.point(Suspending[M[Unit], S](
               In[CWMT[Unit, M, ?, ?], A](CWMT[Unit, M, S, A](FreeT.roll[SS, MM, A](Check[M, S, FreeT[SS, MM, A]](liftM[SS, MM, A](k)(erME))))))))
             case Continue =>  k //; Kleisli.local[MM,A,Sig](h)(k) // local tail k
@@ -412,8 +412,8 @@ object cwmonad {
       case -\/(err) => retract(err) match {
         case Aborting(cp) => M.bind(cp){_ => M.point((-\/(None),Abort))}
         case Suspending(sp) => M.point((-\/(Some(sp)),Suspend))
-        case PAborting(None,cp) => M.bind(cp)(_ => M.point((-\/(None),Restart)))
-        case PAborting(Some(sp),cp) => M.bind(cp)(_ => M.point((-\/(Some(sp)),Restart)))
+        case PAborting(None,cp) => M.bind(cp)(_ => M.point((-\/(None),PAbort)))
+        case PAborting(Some(sp),cp) => M.bind(cp)(_ => M.point((-\/(Some(sp)),PAbort)))
       }
     }
   }

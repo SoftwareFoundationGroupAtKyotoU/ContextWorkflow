@@ -75,7 +75,7 @@ class ContextWorkflowTest extends FunSuite{
     }
 
     var rest = mytest{
-      myrunL[IO,Unit](List(RC(List(Continue,Continue,Restart))))(testP).unsafePerformIO()
+      myrunL[IO,Unit](List(RC(List(Continue,Continue,PAbort))))(testP).unsafePerformIO()
       dat.value
       //assert(dat.value == "_n0_n1_f1_f0")
     }
@@ -298,7 +298,7 @@ class ContextWorkflowTest extends FunSuite{
 
 
     val testStrm = Continue +: Continue +: Continue +: Continue +: Continue +: Abort +: nocheckStrm
-    val testStrm_ = Continue +: Continue +: Continue +: Restart +: nocheckStrm
+    val testStrm_ = Continue +: Continue +: Continue +: PAbort +: nocheckStrm
 
     mytest{
       myrunL(List(RC(testStrm),RC(testStrm_)))(testP4[Unit]).unsafePerformIO()
@@ -325,8 +325,8 @@ class ContextWorkflowTest extends FunSuite{
     } yield ()
 
 
-    val testStrm = Continue +: Continue +: Continue +: Continue +: Restart +: nocheckStrm
-    val testStrm_ = Continue +: Continue +: Continue +: Restart +: nocheckStrm
+    val testStrm = Continue +: Continue +: Continue +: Continue +: PAbort +: nocheckStrm
+    val testStrm_ = Continue +: Continue +: Continue +: PAbort +: nocheckStrm
 
     mytest{
       myrunL(List(RC(testStrm),RC(testStrm_)))(testP4[Unit]).unsafePerformIO()
@@ -345,7 +345,7 @@ class ContextWorkflowTest extends FunSuite{
     } yield ()
 
     val testStrm = Continue +: Continue +: Suspend +: nocheckStrm
-    val testStrm_ = Continue +: Restart +: nocheckStrm
+    val testStrm_ = Continue +: PAbort +: nocheckStrm
 
     val s = mytest{
       val s = myrun[IO,Unit](RC(testStrm))(testP5).unsafePerformIO() match {
@@ -378,8 +378,8 @@ class ContextWorkflowTest extends FunSuite{
     } yield ()
 
     val testStrm1 = Continue +:  Suspend +: nocheckStrm
-    val testStrm2 = Continue +: Restart +: nocheckStrm
-    val testStrm3 = Restart +: nocheckStrm // +: Restart +: nocheckStrm
+    val testStrm2 = Continue +: PAbort +: nocheckStrm
+    val testStrm3 = PAbort +: nocheckStrm // +: Restart +: nocheckStrm
 
     val s = mytest{
       val s = myrun[IO,Unit](RC(testStrm1))(testP).unsafePerformIO() match {
@@ -416,14 +416,14 @@ class ContextWorkflowTest extends FunSuite{
           _ <- log("ssn1") %% (_ => log("ssf1"))
           _ <- whenM[CWF[R,?],Unit](step == 0){for{
             _ <- IO{step += 1} %% ()
-            _ <- throwTError[IO,SUS[R],Unit](Restart)
+            _ <- throwTError[IO,SUS[R],Unit](PAbort)
           } yield ()}
           _ <- compensateWith(log("ssn2"))(_ => log("ssf2"))
         } yield "ssprcomp") %% (a => log(a))
         _ <- log("sn2") %% (_ => log("sf2"))
         _ <- whenM[CWF[R,?],Unit](step == 1){for{
           _ <- IO{step += 1} %% ()
-          _ <- throwTError[IO,SUS[R],Unit](Restart)
+          _ <- throwTError[IO,SUS[R],Unit](PAbort)
         } yield ()}
         _ <- log("sn3") %% (_ => log("sf3"))
       } yield "sprcomp") %% (a => log(a))
@@ -431,7 +431,7 @@ class ContextWorkflowTest extends FunSuite{
       _ <- compensateWith(log("n3"))(_ => log("f3"))
       _ <- whenM[CWF[R,?],Unit](step == 2){for{
         _ <- IO{step += 1} %% ()
-        _ <- throwTError[IO,SUS[R],Unit](Restart)
+        _ <- throwTError[IO,SUS[R],Unit](PAbort)
       } yield ()}
       _ <- compensateWith(log("n4"))(_ => log("f4"))
     } yield ()

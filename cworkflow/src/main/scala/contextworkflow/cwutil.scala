@@ -54,7 +54,7 @@ object cwutil {
   private def catchTE[A](cw: => CW[Try[A]]):CW[Try[A]] = {
     val recovery: PartialFunction[Try[A], CW[Unit]] = (t: Try[A]) => t match {
       case Failure(AbortE) => throwTError(Abort)
-      case Failure(RestartE) => throwTError(Restart)
+      case Failure(RestartE) => throwTError(PAbort)
       //case Failure(SuspendTE) => throwSuspend()
       case _ => atom(IO(()))(_ => IO(()))
     }
@@ -149,7 +149,7 @@ object cwutil {
         })
         a <- tried match {
           case Failure(AbortE) => throwError[A](Abort)
-          case Failure(RestartE) => throwError[A](Restart)
+          case Failure(RestartE) => throwError[A](PAbort)
           case Success(a) => IO(a) %% ()
           case Failure(e) => IO[A]{throw e} %% ()
         }
