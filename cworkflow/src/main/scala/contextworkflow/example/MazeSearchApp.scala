@@ -13,7 +13,7 @@ import Scalaz._
 
 object MazeSearchMlessApp extends App {
   import cwutil._
-  import cwmless._
+//  import cwmless._
   import mazes._
   import scala.language.reflectiveCalls
 

@@ -7,7 +7,7 @@ import scalaz.effect.IO
 
 object PackageManagerMonadless extends App{
   import cwutil._
-  import cwmless._
+//  import cwmless._
 
   case class Pkg(pid: String,version: Double,dep: List[Pkg] = Nil){
     override def toString: String = pid + version.toString

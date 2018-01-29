@@ -17,7 +17,7 @@ import scalaz.std.list._
 import scalaz.syntax.foldable._
 
 class CWMlessTest extends FunSuite{
-  import cwmless._
+//  import cwmless._
 
   val RC = ReactiveContext
 

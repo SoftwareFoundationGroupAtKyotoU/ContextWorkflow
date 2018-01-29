@@ -12,8 +12,8 @@ import scala.language.higherKinds
 import scala.language.existentials
 
 class CWException extends Exception
-case class PAbortE() extends Exception
-object RestartE extends PAbortE
+object PAbortE extends CWException
+//object RestartE extends PAbortE
 object AbortE extends CWException
 object SuspendE extends CWException
 

@@ -12,20 +12,21 @@ import io.monadless._
 import scala.util.{Try,Failure,Success}
 
 /** Utility functions for CW monad */
-object cwutil {
+object cwutil extends Monadless[CWMT[Unit,IO,Nothing,?]]{
 
   val RC = ReactiveContext
 
   type CW[A] = cwmonad.CWMT[Unit,IO,Nothing,A]
 
-  val cwmless = new Monadless[CW]{
-    def apply[T](v: => T): M[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
+//  val cwmless = new Monadless[CW]{
 
-    def collect[A](l: List[M[A]]): M[List[A]] = l.foldLeft(atom[List[A]](IO(Nil))())((b, ma) => for{
+  def apply[T](v: => T): CW[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
+
+  def collect[A](l: List[CW[A]]): CW[List[A]] = l.foldLeft(atom[List[A]](IO(Nil))())((b, ma) => for{
       l0 <- b
       a <- ma
-    } yield a :: l0).map(_.reverse)
-  }
+  } yield a :: l0).map(_.reverse)
+//  }
 
   def point[A](a: => A) = cwM.point(a)
 
@@ -54,7 +55,7 @@ object cwutil {
   private def catchTE[A](cw: => CW[Try[A]]):CW[Try[A]] = {
     val recovery: PartialFunction[Try[A], CW[Unit]] = (t: Try[A]) => t match {
       case Failure(AbortE) => throwTError(Abort)
-      case Failure(RestartE) => throwTError(PAbort)
+      case Failure(PAbortE) => throwTError(PAbort)
       //case Failure(SuspendTE) => throwSuspend()
       case _ => atom(IO(()))(_ => IO(()))
     }
@@ -149,7 +150,7 @@ object cwutil {
         })
         a <- tried match {
           case Failure(AbortE) => throwError[A](Abort)
-          case Failure(RestartE) => throwError[A](PAbort)
+          case Failure(PAbortE) => throwError[A](PAbort)
           case Success(a) => IO(a) %% ()
           case Failure(e) => IO[A]{throw e} %% ()
         }
