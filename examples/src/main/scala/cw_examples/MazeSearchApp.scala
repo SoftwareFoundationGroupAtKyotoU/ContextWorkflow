@@ -1,20 +1,22 @@
-package contextworkflow.example
+package cw_examples
 
 import contextworkflow._
-import rescala._
+import cw_examples.mazes.{Node => _}
+
 import scala.language.implicitConversions
+import scalaz.Scalaz._
 import scalaz._
-import Scalaz._
 
 
 /**
   * Created by hinoue on 2017/08/02.
   */
 
-object MazeSearchMlessApp extends App {
+object MazeSearchApp extends App {
   import cwutil._
 //  import cwmless._
   import mazes._
+
   import scala.language.reflectiveCalls
 
   def visit(n: Node, maze: Set[Node]):CW[Unit] = lift {

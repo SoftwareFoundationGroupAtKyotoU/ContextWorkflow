@@ -1,11 +1,9 @@
-package contextworkflow.example
+package cw_examples
 import contextworkflow._
 
-import scalaz._
-import scala.util.{Try,Failure,Success}
 import scalaz.effect.IO
 
-object PackageManagerMonadless extends App{
+object PackageManagerApp extends App{
   import cwutil._
 //  import cwmless._
 

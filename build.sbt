@@ -40,14 +40,14 @@ lazy val commonSettings = Seq(
 lazy val root = (project in file(".")).settings(
   name := "contextworkflow"//,
   //commonSettings
-).aggregate(cw)
-
-//lazy val macros = (project in file("macros")).settings(
-//  name := "macro",
-//  commonSettings
-//)
+).aggregate(cw,examples)
 
 lazy val cw = (project in file("cworkflow")).settings(
   name := "cworkflow",
   commonSettings
 )
+
+lazy val examples = (project in file("examples")).settings(
+  name := "examples",
+  commonSettings
+).dependsOn(cw)

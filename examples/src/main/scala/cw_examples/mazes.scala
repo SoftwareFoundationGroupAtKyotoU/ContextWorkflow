@@ -1,7 +1,8 @@
-package contextworkflow.example
+package cw_examples
 
 import contextworkflow._
 import rescala._
+
 import scala.language.implicitConversions
 import scalaz.effect._
 
