@@ -9,7 +9,8 @@ import scalaz.effect.IO
 import cwmonad._
 import io.monadless._
 
-import scala.util.{Try,Failure,Success}
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 /** Utility functions for CW monad */
 object cwutil extends Monadless[CWMT[Unit,IO,Nothing,?]]{
@@ -50,6 +51,23 @@ object cwutil extends Monadless[CWMT[Unit,IO,Nothing,?]]{
   def nonatomic[A](cw: CW[A]): CW[A] = cwmonad.nonatomicL[Unit,IO,Nothing,A](cw)
 
   def throwError[A](s:Context): CW[A] = throwTError[IO,Nothing,A](s)
+
+  private def waitForContinue(rc:ReactiveContext):Unit = {
+    while(rc.ccheck() != Continue){
+      Thread.sleep(500)
+    }
+  }
+
+  // always use rc. If rc = Continue, it will restart.
+  def seamlessExec[A](cw: CW[A], rc:ReactiveContext, suscw:Option[CW[A]] = None):A =
+    (suscw match{
+      case Some(p) => p
+      case None => cw
+    }).exec(rc) match {
+      case -\/(Some(p)) => waitForContinue(rc);seamlessExec(cw,rc,Some(p))
+      case -\/(None) => waitForContinue(rc);seamlessExec(cw,rc)
+      case \/-(v) => v
+    }
 
   // catch TransactionError in the normal action of pwf
   private def catchTE[A](cw: => CW[Try[A]]):CW[Try[A]] = {
