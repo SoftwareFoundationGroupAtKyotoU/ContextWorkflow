@@ -33,7 +33,7 @@ object mazes{
     (0, 5), (1, 5), LLLLLL, (3, 5), (4, 5), (5, 5)
   ) - LLLLLL).map(p => Node(p)).map { n =>
     n.point match {
-      case (3, 0)|(3, 3) => n.copy(hasCP = true)
+      case (1, 3)|(3, 0) => n.copy(hasCP = true)
       case _ => n
     }
   }
