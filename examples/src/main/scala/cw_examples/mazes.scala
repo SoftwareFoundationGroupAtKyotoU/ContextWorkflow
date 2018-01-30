@@ -4,7 +4,6 @@ import contextworkflow._
 import rescala._
 
 import scala.language.implicitConversions
-import scalaz.effect._
 
 object mazes{
   case class Node(point:(Int,Int), hasCP:Boolean = false, var visited:Boolean = false)
@@ -42,12 +41,12 @@ object mazes{
     n.visited
   }
 
-  def visited(n: Node): IO[Unit] = {
-    IO(n.visited = true)
+  def visited(n: Node): Unit = {
+    n.visited = true
   }
 
-  def unknown(n: Node): IO[Unit] = {
-    IO(n.visited = false)
+  def unknown(n: Node): Unit = {
+    n.visited = false
   }
 
   def neighbors(n: Node, maze: Set[Node]): List[Node] = {
@@ -60,10 +59,15 @@ object mazes{
   // imitate timer
   val moveCount = Var(0)
 
-  def move(n: Node, info: String = ""):IO[Unit] = for {
-    _ <- IO(moveCount() = moveCount.now + 1)
-    _ <- IO.putStrLn(info + "[move to " + n.point + "]")
-  } yield ()
+//  def move(n: Node, info: String = ""):IO[Unit] = for {
+//    _ <- IO(moveCount() = moveCount.now + 1)
+//    _ <- IO.putStrLn(info + "[move to " + n.point + "]")
+//  } yield ()
+
+  def move(n: Node, info: String = ""):Unit = {
+    moveCount() = moveCount.now + 1
+    println(info + "[move to " + n.point + "]")
+  }
 
   def timeout(threshold: Int, ctx:Context = Abort):() => Signal[Context] = () => {
     val now = moveCount.now

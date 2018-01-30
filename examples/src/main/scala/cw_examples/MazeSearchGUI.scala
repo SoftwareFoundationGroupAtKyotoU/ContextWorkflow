@@ -190,7 +190,7 @@ object mazegui extends SimpleSwingApplication {
   }
 
   def visit(n: mazes.Node, maze: Set[mazes.Node]):CW[Unit] = lift {
-    unlift(visited(n) %% (_ => unknown(n)))
+    unlift(visited(n) /+ (_ => unknown(n)))
     if(n.hasCP) unlift(cp)
     unlift{foldCW(neighbors(n, maze))(())((_, neighbor) =>
       if(!isVisited(neighbor))

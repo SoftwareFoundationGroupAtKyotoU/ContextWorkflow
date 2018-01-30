@@ -20,12 +20,12 @@ object MazeSearchApp extends App {
   import scala.language.reflectiveCalls
 
   def visit(n: Node, maze: Set[Node]):CW[Unit] = lift {
-    unlift(visited(n) %% (_ => unknown(n)))
+    unlift(visited(n) /+ (_ => unknown(n)))
     if(n.hasCP) unlift(cp)
     unlift{neighbors(n, maze).foldLeftM[CW,Unit](())((_, neighbor) =>
       if(!isVisited(neighbor))
         sub{ lift{
-          unlift(move(neighbor) %% (_ => move(n, "comp:")))
+          unlift(move(neighbor) /+ (_ => move(n, "comp:")))
           unlift(visit(neighbor, maze))
           unlift(move(n, "back:") %% ())
         } }
