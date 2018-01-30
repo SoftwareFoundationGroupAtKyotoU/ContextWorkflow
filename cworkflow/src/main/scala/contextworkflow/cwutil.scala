@@ -31,7 +31,9 @@ object cwutil extends Monadless[CWMT[Unit,IO,Nothing,?]]{
 
   def point[A](a: => A) = cwM.point(a)
 
-  def foreach[A](l: Stream[A])(f: A => CW[Unit]): CW[Unit] =
+  def foreachCW[A](l: Seq[A])(f: A => CW[Unit]):CW[Unit] = foreachCW(l.toStream)(f)
+
+  def foreachCW[A](l: Stream[A])(f: A => CW[Unit]): CW[Unit] =
     l.foldLeftM[CW[?], Unit](())((_, a) => f(a))
 
   def foldCW[A,B](l: List[A])(z: B)(f: (B,A) => CW[B]): CW[B] =

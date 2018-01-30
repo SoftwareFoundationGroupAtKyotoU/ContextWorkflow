@@ -107,6 +107,10 @@ object cwmonad {
       r.leftMap(opt => opt.map(_.out.asInstanceOf[CWMT[Unit,IO,Nothing,A]]))
     }
 
+    def exec(st: Seq[Context])
+            (implicit ev: CWMT[E,M,S,A] =:= CW[A])
+    : \/[Option[CW[A]],A] = exec(ReactiveContext(st.toStream))
+
     // following methods are for test
 
     def runBMIO(st: Sig = ReactiveContext(Continue))
