@@ -16,7 +16,7 @@ import rescala._
 
 import scala.collection.mutable
 
-object mazegui extends SimpleSwingApplication {
+object MazeSearchGUI extends SimpleSwingApplication {
   import mazes._
 
   val maze = cw_examples.mazes.getMaze1

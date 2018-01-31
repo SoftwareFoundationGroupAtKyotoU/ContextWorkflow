@@ -11,7 +11,7 @@ var sum = 0
 def add(i:Int):CW[Unit] = {sum += i} /+ {_ => sum -= i}
 val add10:CW[Unit] = foreachCW(1 to 10)(add(_))
 val ctx:Stream[Context] = Stream(Continue,Continue,Continue,Continue,Abort)
-add10.exec(RC(ctx)) // sum = 0
+add10.exec(ctx) // sum = 0
 add10.exec() // sum = 55
 ```
 
