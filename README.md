@@ -1,5 +1,6 @@
 # ContextWorkflow
-under construction
+
+This is an embedded domain specific language for program interruption and compensation.
 
 A simple example is:
 
