@@ -130,6 +130,6 @@ and choose one.
 
 Additionally, online REPLs are available.
 
-Basic: (https://scastie.scala-lang.org/h-inoue/NF9nSWfLR9S9BwAH0bEI1Q/1)
+Basic: (https://scastie.scala-lang.org/h-inoue/FYckcE1LSyagFDklrc6oPw/1)
 
 Package Manager: (https://scastie.scala-lang.org/h-inoue/73tBbDTwSR2z8F5zYmfl5w/1) 

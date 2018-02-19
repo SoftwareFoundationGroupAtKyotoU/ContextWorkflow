@@ -111,6 +111,10 @@ object cwmonad {
             (implicit ev: CWMT[E,M,S,A] =:= CW[A])
     : \/[Option[CW[A]],A] = exec(ReactiveContext(st.toStream))
 
+    def exec(sig: rescala.Signal[Context])
+            (implicit ev: CWMT[E,M,S,A] =:= CW[A])
+    : \/[Option[CW[A]],A] = exec(ReactiveContext(sig))
+
     // following methods are for test
 
     def runBMIO(st: Sig = ReactiveContext(Continue))

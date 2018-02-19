@@ -17,7 +17,7 @@ testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck,
   "-minSize","10","-maxSize", "20", "-minSuccessfulTests", "200", "-maxDiscardRatio", "30", "-workers", "1", "-verbosity", "2")
 
 lazy val commonSettings = Seq(
-  version := "0.1-SNAPSHOT",
+  version := "0.1.1-SNAPSHOT",
   scalaVersion := "2.12.3",
   resolvers += Resolver.bintrayRepo("rmgk", "maven"),
   resolvers += Resolver.bintrayRepo("pweisenburger", "maven"),
@@ -36,11 +36,13 @@ lazy val commonSettings = Seq(
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaCheck,
     "-minSize","10","-maxSize", "20", "-minSuccessfulTests", "200", "-workers", "1", "-verbosity", "2"),
   addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
+
+  ,publishTo := Some(Resolver.file("cwf",file("./published"))(Patterns(true, Resolver.mavenStyleBasePattern)))
 )
 
 lazy val root = (project in file(".")).settings(
-  name := "contextworkflow",
-  commonSettings
+  name := "contextworkflow"
+  ,commonSettings
 ).aggregate(cw,examples)
 
 lazy val cw = (project in file("cworkflow")).settings(
