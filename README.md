@@ -40,17 +40,15 @@ ContextWorkflow assemble them in monadic way.
 ### Primitive Workflow
 A pair of normal and compensation action.
 Basically, a compensation action becomes reversal of a normal action.
-
 ```scala
-val normal: A
-val compensation: A => Unit
- 
-normal /+ compensation : CW[A]
+def /+[A](normal: A)(compensation: A => Unit): CW[A]
+
+normal /+ compensation : CW[A] // primitive workflow
 ```
 where the argument of `compensation` becomes the result of the `normal` action.
 Normal and compensation actions can be any effectful code.
 
-### Sequencing
+### Sequencing Workflows
 
 Since CW is a monad of scalaz, we can use for-comprehension and many constructs provided by scalaz.
 
@@ -75,11 +73,20 @@ Context is what manages interruption. Context consists of four elements.
 - `PAbort` : roll-backing to the nearest checkpoint
 - `Suspend` : suspending the execution and returning the rest CW
 
-`CW` class has `exec(ctx:Seq[Context])` method.
+`CW` class has an `exec` method.
+```scala
+def exec(ctx:Seq[Context]): \/[Option[CW[A]],A] 
+```
+The argument is of the type `Seq[Context]`.
 In demos, basically we use `List[Context]` or `Stream[Context]`.
-
 Here, `Seq[Context]` expresses an iterator.
-Basically, one Context is consumed before an execution of a primitive workflow.  
+Basically, one Context is consumed before an execution of a primitive workflow.
+
+The `exec` method returns `\/[Option[CW[A]],A]`, where `\/[A,B]` is disjunction type in scalaz.
+Actually, the value becomes one of following three cases.
+- `-\/(Some(cw))` : suspended workflow, where `cw:CW[A]` 
+- `-\/(None)` : aborted workflow 
+- `\/-(a)` : succeeded workflow
  
 The argument also can be `Signal[Context]`, where `Signal` is of REScala 
 library, which realizes Functional Reactive Programming in Scala.
@@ -114,14 +121,14 @@ def /~[A](normal: A)(comp: A => Unit)
 
 ## Requirements
 - sbt 0.13
+- scalaz 7.2
 
 ## Demos
-`sbt examples/run`
-
+Do `sbt examples/run`
 and choose one.
 
-Online REPLs are available
+Additionally, online REPLs are available.
 
-Basic: https://scastie.scala-lang.org/h-inoue/NF9nSWfLR9S9BwAH0bEI1Q/1
+Basic: (https://scastie.scala-lang.org/h-inoue/NF9nSWfLR9S9BwAH0bEI1Q/1)
 
-Package Manager: https://scastie.scala-lang.org/h-inoue/73tBbDTwSR2z8F5zYmfl5w/1 
+Package Manager: (https://scastie.scala-lang.org/h-inoue/73tBbDTwSR2z8F5zYmfl5w/1) 
