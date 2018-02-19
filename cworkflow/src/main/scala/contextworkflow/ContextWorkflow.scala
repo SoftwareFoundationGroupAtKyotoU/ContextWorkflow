@@ -92,7 +92,7 @@ object cwmonad {
       myrun[IO,A](st)(ev(this)).unsafePerformIO()
     }
 
-    import cwutil.CW
+    //import cwutil.CW
 
     /**
       * Standard execute method with underlying IO monad, which is used with cwutil

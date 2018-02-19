@@ -13,17 +13,17 @@ import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /** Utility functions for CW monad */
-object cwutil extends Monadless[CWMT[Unit,IO,Nothing,?]]{
+object cwutil extends Monadless[CW]{
 
-  val RC = ReactiveContext
+  //val RC = ReactiveContext
 
-  type CW[A] = cwmonad.CWMT[Unit,IO,Nothing,A]
+  //type CW[A] = cwmonad.CWMT[Unit,IO,Nothing,A]
 
 //  val cwmless = new Monadless[CW]{
 
-  def apply[T](v: => T): CW[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
+  def apply[T](v: => T): M[T] = IO(v) %% () // atom[Unit,IO,SUS[Nothing],T](IO(v))(_ => IO(()))
 
-  def collect[A](l: List[CW[A]]): CW[List[A]] = l.foldLeft(atom[List[A]](IO(Nil))())((b, ma) => for{
+  def collect[A](l: List[M[A]]): M[List[A]] = l.foldLeft(atom[List[A]](IO(Nil))())((b, ma) => for{
       l0 <- b
       a <- ma
   } yield a :: l0).map(_.reverse)
@@ -69,6 +69,16 @@ object cwutil extends Monadless[CWMT[Unit,IO,Nothing,?]]{
       case -\/(Some(p)) => waitForContinue(rc);seamlessExec(cw,rc,Some(p))
       case -\/(None) => waitForContinue(rc);seamlessExec(cw,rc)
       case \/-(v) => v
+    }
+
+  def seamlessExecAbort[A](cw: CW[A], rc:ReactiveContext, suscw:Option[CW[A]] = None):Option[A] =
+    (suscw match{
+      case Some(p) => p
+      case None => cw
+    }).exec(rc) match {
+      case -\/(Some(p)) => waitForContinue(rc);seamlessExecAbort(cw,rc,Some(p))
+      case -\/(None) => None
+      case \/-(v) => Some(v)
     }
 
   // catch TransactionError in the normal action of pwf
