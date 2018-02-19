@@ -4,7 +4,7 @@ An embedded domain specific language (E-DSL) for program interruption and compen
 This E-DSL mainly supports ...
 
 - Interruption like asynchronous exceptions
-- Roll-backing like transaction and Software Transactional Memory
+- Roll-backing like transactions and Software Transactional Memory
 - Suspension like delimited continuations
 
 A simple example is:
@@ -50,9 +50,10 @@ Normal and compensation actions can be any effectful code.
 
 ### Sequencing Workflows
 
-Since CW is a monad of scalaz, we can use for-comprehension and many constructs provided by scalaz.
+Since CW is a monad of [scalaz](https://github.com/scalaz/scalaz),
+we can use for-comprehension and many constructs provided by scalaz.
 
-We also can use monadless style: `unlift` inside `lift`.
+We also can use [monadless](https://github.com/monadless/monadless#how-does-it-work) style: `unlift` inside `lift`.
 
 ```scala
 def unlift[A](cw: CW[A]): A
@@ -88,7 +89,7 @@ Actually, the value becomes one of following three cases.
 - `-\/(None)` : aborted workflow 
 - `\/-(a)` : succeeded workflow
  
-The argument also can be `Signal[Context]`, where `Signal` is of REScala 
+The argument also can be `Signal[Context]`, where `Signal` is of [REScala](https://github.com/guidosalva/REScala) 
 library, which realizes Functional Reactive Programming in Scala.
 Using signals, intuitively ContextWorkflow generalizes time-out; 
 while time-out execution usually takes time-limit, this takes signal of context.
