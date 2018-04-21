@@ -14,7 +14,6 @@ import scalaz._
 
 object MazeSearchApp extends App {
   import cwutil._
-//  import cwmless._
   import mazes._
 
   import scala.language.reflectiveCalls
@@ -27,19 +26,9 @@ object MazeSearchApp extends App {
         sub{ lift{
           unlift(move(neighbor) /+ (_ => move(n, "comp:")))
           unlift(visit(neighbor, maze))
-          unlift(move(n, "back:") %% ())
+          unlift(move(n, "back:") /+ ())
         } }
       else () /+ ()
-//      wf {
-//        if (!isVisited(neighbor))
-//          unlift(sub {
-//            wf {
-//              unlift(move(neighbor) %% (_ => move(n, "comp:")))
-//              unlift(visit(neighbor, maze))
-//              unlift(move(n, "back:") %% ())
-//            }
-//          })
-//      }
     ) }
   }
 
@@ -64,29 +53,13 @@ object MazeSearchApp extends App {
     case -\/(Some(p)) => p
   }
   println("***** Charging *****")
-  val p2 = p1.exec(RC(to)) match {
-    case -\/(Some(p)) => p
-  }
-  println("***** Charging *****")
-  p2.exec(RC(to))
-
-  initMaze(maze0)
-
-//  def search(maze: Set[Node], max: Int):Unit = {
-//    val startNode: Node = maze.find(_.point == (0,0)).orElse(Some(maze.head)).get
-//    println("start from:" + startNode)
-//    val to = timeout(max,Abort)()
-//
-//    visit(startNode, maze).runBM(ReactiveContext.fromSignal(to))
-//    val visitedNodes = maze.filter(_.visited).map(_.point)
-//    println("visited:" + visitedNodes)
+  p1.exec()
+//  val p2 = p1.exec(RC(to)) match {
+//    case -\/(Some(p)) => p
 //  }
-//
-//  val maze0 = getMaze0
-//  val maze1 = getMaze1
-//
-//  search(maze0, 10)
-//  search(maze0, 10)
-//  search(maze0, 10)
+//  println("***** Charging *****")
+//  p2.exec(RC(to))
+
+//  initMaze(maze0)
 
 }

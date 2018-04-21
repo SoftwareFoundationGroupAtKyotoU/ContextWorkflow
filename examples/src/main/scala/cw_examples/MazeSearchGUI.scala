@@ -196,7 +196,6 @@ object MazeSearchGUI extends SimpleSwingApplication {
       if(!isVisited(neighbor))
         sub{ lift{
           unlift(moveGUI(neighbor) /+ (_ => moveGUI(n, "comp:")))
-          //unlift(println(ctx.now) /+ ())
           unlift(visit(neighbor, maze))
           unlift(moveGUI(n, "back:") /+ ())
         } }
@@ -212,27 +211,5 @@ object MazeSearchGUI extends SimpleSwingApplication {
     val start0: Node = maze.find(_.point == (0,0)).get
     seamlessExec(visit(start0,maze),RC(ctx))
     println("He did search!")
-//    visit(start0,maze).exec(RC(ctx)) match {
-//      case -\/(None) => suspendedCW = Some(visit(start0,maze))
-//      case -\/(Some(p)) => suspendedCW = Some(p)
-//      case \/-(r) => println("Succeed!")
-//    }
-//
-//    while (true) {
-//      //Swing onEDTWait {tick.fire()}
-//      Thread sleep 200
-//      if(restartflag){
-//        restartflag = false
-//        suspendedCW match{
-//          case Some(p) => ctx = Var(Continue);
-//            p.exec(RC(ctx)) match {
-//              case -\/(None) => suspendedCW = Some(visit(start0,maze))
-//              case -\/(Some(p)) => suspendedCW = Some(p)
-//              case \/-(r) => println("Succeed!")
-//            }
-//          case None => ()
-//        }
-//      }
-//    }
   }
 }
